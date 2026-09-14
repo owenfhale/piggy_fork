@@ -30,7 +30,10 @@ while(my $line=<INPUT>){
 	my $seq_end=0;
 	
 	if($line !~ /^##/){
-		if($line_array[2] eq "CDS" || $line_array[2] eq "rRNA" || $line_array[2] eq "tRNA"){
+	# owen changed the if statement below to include more ncRNAs than just rRNAs and tRNAs from this:
+	#   if($line_array[2] eq "CDS" || $line_array[2] eq "rRNA" || $line_array[2] eq "tRNA"){
+	# to this:
+		if($line_array[2] eq "CDS" || ($line_array[2] =~ /RNA$/ && $line_array[2] ne "mRNA")){
 			$contig=$line_array[0];
 			$sta=$line_array[3];
 			$end=$line_array[4];
