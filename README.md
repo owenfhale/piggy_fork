@@ -1,3 +1,14 @@
+# Piggy Fork
+This is a slighly different version of the Piggy intergenic pan-genome analysis tool.
+
+The original code defines intergenic regions (IGRs) as sequences between annotated genes, where genes are defined as features in the input GFF file where the Type column is "CDS", "tRNA", or "rRNA".
+
+In this version, genes are defined more broadly. The Type column of a gene can be "CDS" or any string ending in "RNA" except for "mRNA".
+
+Original code repository: https://github.com/harry-thorpe/piggy
+
+Original publication: https://doi.org/10.1093/gigascience/giy015
+
 # Piggy
 
 Piggy is a tool for analysing the intergenic component of bacterial genomes. It is designed to be used in conjunction with Roary (https://github.com/sanger-pathogens/Roary).
