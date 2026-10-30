@@ -29,7 +29,7 @@ while(my $line=<INPUT>){
 	my $gene="";
 	my $seq_end=0;
 	
-	if($line !~ /^##/){
+	if($line !~ /^#/){
 	# owen changed the if statement below to include more ncRNAs than just rRNAs and tRNAs from this:
 	#   if($line_array[2] eq "CDS" || $line_array[2] eq "rRNA" || $line_array[2] eq "tRNA"){
 	# to this:
