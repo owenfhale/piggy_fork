@@ -206,7 +206,7 @@ my $isolate_count=0;
 opendir(my $dh, $in_dir);
 while(my $file=readdir $dh){
 	
-	if($file =~ /(\S+)\.gff$/){
+	if($file =~ /(\S+)\.gff3?$/){
 		my $isolate=$1;
 		
 		push @isolate_array, $isolate;
@@ -237,7 +237,7 @@ open OUTPUT, ">$out_dir/isolates.txt" or die "Cannot open output file: $out_dir/
 opendir($dh, $in_dir);
 while(my $file=readdir $dh){
 	
-	if($file =~ /(\S+)\.gff$/){
+	if($file =~ /(\S+)\.gff3?$/){
 		my $isolate=$1;
 		
 		print OUTPUT "$isolate\n";
@@ -264,7 +264,8 @@ if(! -e "$out_dir/gff_files" && ! -d "$out_dir/gff_files"){
 }
 
 foreach my $isolate(@isolate_array){
-	copy("$in_dir/${isolate}.gff", "$out_dir/gff_files") or die "Cannot copy gff file - $in_dir/${isolate}.gff\n";
+	my $gff_file=(-e "$in_dir/${isolate}.gff") ? "$in_dir/${isolate}.gff" : "$in_dir/${isolate}.gff3";
+	copy($gff_file, "$out_dir/gff_files/${isolate}.gff") or die "Cannot copy gff file - $gff_file\n";
 }
 
 # copy roary-fixed gff files to new folder - now all should be original or fixed
