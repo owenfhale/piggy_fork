@@ -88,6 +88,10 @@ my $int_name="";
 my $int_id="";
 my $int_count=0;
 
+# owen added $prev_idx: index of the feature reaching furthest along the current contig so far,
+# so an intergenic region never starts inside a feature that encloses a nested one (e.g. an ncRNA inside a CDS)
+my $prev_idx=0;
+
 for(my $i=0; $i<$gene_count; $i++){
 	# First gene.
 	if($i == 0){
@@ -111,11 +115,13 @@ for(my $i=0; $i<$gene_count; $i++){
 	# Last gene.
 	elsif($i == ($gene_count - 1)){
 		$contig=$gene_array[$i][7];
-		$int_sta=($gene_array[$i][3] + 1);
+		# owen: if the last feature is nested inside an earlier one, start after whichever reaches further
+		my $last_idx=($gene_array[$prev_idx][7] eq $gene_array[$i][7] && $gene_array[$prev_idx][3] > $gene_array[$i][3]) ? $prev_idx : $i;
+		$int_sta=($gene_array[$last_idx][3] + 1);
 		$int_end=$contig_hash_end{$contig};
 		$int_len=(($int_end - $int_sta) + 1);
 		
-		$gene_pre=$gene_array[$i][0];
+		$gene_pre=$gene_array[$last_idx][0];
 		$gene_pos="NA";
 		$int_type="NA";
 		$int_name="${gene_pre}_+_+_${gene_pos}_+_+_$int_type";
@@ -131,11 +137,11 @@ for(my $i=0; $i<$gene_count; $i++){
 	elsif($gene_array[($i-1)][7] ne $gene_array[$i][7]){
 		# Edge of previous contig.
 		$contig=$gene_array[($i-1)][7];
-		$int_sta=($gene_array[($i-1)][3] + 1);
+		$int_sta=($gene_array[$prev_idx][3] + 1);
 		$int_end=$contig_hash_end{$contig};
 		$int_len=(($int_end - $int_sta) + 1);
 		
-		$gene_pre=$gene_array[($i-1)][0];
+		$gene_pre=$gene_array[$prev_idx][0];
 		$gene_pos="NA";
 		$int_type="NA";
 		$int_name="${gene_pre}_+_+_${gene_pos}_+_+_$int_type";
@@ -168,26 +174,26 @@ for(my $i=0; $i<$gene_count; $i++){
 	# Gene on same contig.
 	elsif($gene_array[($i-1)][7] eq $gene_array[$i][7]){
 		$contig=$gene_array[$i][7];
-		$int_sta=($gene_array[($i-1)][3] + 1);
+		$int_sta=($gene_array[$prev_idx][3] + 1);
 		$int_end=($gene_array[$i][2] - 1);
 		$int_len=(($int_end - $int_sta) + 1);
 		
-		$gene_pre=$gene_array[($i-1)][0];
+		$gene_pre=$gene_array[$prev_idx][0];
 		$gene_pos=$gene_array[$i][0];
 	
-		if($gene_array[($i-1)][6] eq "Forward" && $gene_array[$i][6] eq "Forward"){
+		if($gene_array[$prev_idx][6] eq "Forward" && $gene_array[$i][6] eq "Forward"){
 			
 			$int_type="CO_F";
 			$int_name="${gene_pre}_+_+_${gene_pos}_+_+_$int_type";
-		}elsif($gene_array[($i-1)][6] eq "Forward" && $gene_array[$i][6] eq "Reverse"){
+		}elsif($gene_array[$prev_idx][6] eq "Forward" && $gene_array[$i][6] eq "Reverse"){
 			
 			$int_type="DT";
 			$int_name="${gene_pre}_+_+_${gene_pos}_+_+_$int_type";
-		}elsif($gene_array[($i-1)][6] eq "Reverse" && $gene_array[$i][6] eq "Forward"){
+		}elsif($gene_array[$prev_idx][6] eq "Reverse" && $gene_array[$i][6] eq "Forward"){
 			
 			$int_type="DP";
 			$int_name="${gene_pre}_+_+_${gene_pos}_+_+_$int_type";
-		}elsif($gene_array[($i-1)][6] eq "Reverse" && $gene_array[$i][6] eq "Reverse"){
+		}elsif($gene_array[$prev_idx][6] eq "Reverse" && $gene_array[$i][6] eq "Reverse"){
 			
 			$int_type="CO_R";
 			$int_name="${gene_pre}_+_+_${gene_pos}_+_+_$int_type";
@@ -199,6 +205,11 @@ for(my $i=0; $i<$gene_count; $i++){
 		if($int_len > 0){
 			print OUTPUT_I "$int_id\t$int_name\t$int_sta\t$int_end\t$int_len\t$int_type\t$contig\n";
 		}
+	}
+	
+	# owen: update $prev_idx unless this feature is nested inside the current furthest-reaching one
+	if($gene_array[$prev_idx][7] ne $gene_array[$i][7] || $gene_array[$i][3] > $gene_array[$prev_idx][3]){
+		$prev_idx=$i;
 	}
 }
 
